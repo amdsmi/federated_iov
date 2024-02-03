@@ -4,7 +4,6 @@ from tensorflow import keras
 from keras import layers
 import src.config.config as cfg
 from src.AI.dataset import DataGenerator
-import tensorflow as tf
 
 
 def classifier(input_shape, num_classes):
@@ -39,7 +38,21 @@ def classifier(input_shape, num_classes):
     return keras.Model(inputs, outputs)
 
 
+def get_raw_model_weights():
+
+    model = classifier(cfg.image_size, cfg.class_num)
+
+    model_json = model.to_json()
+    weights = model.get_weights()
+    json_weights = [np.array(w).tolist() for w in weights]
+
+    return {'model': model_json,
+            'weights': json_weights,
+            'metrics': {'loss': None, 'acc': None}}
+
+
 def load_json():
+
     val_dataset = DataGenerator(
         images_path=cfg.dataset_path,
         label_csv=cfg.val_labels,
@@ -69,4 +82,6 @@ def load_json():
 
 
 if __name__ == "__main__":
-    load_json()
+    # load_json()
+
+    print(get_raw_model_weights())

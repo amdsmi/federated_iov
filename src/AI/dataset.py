@@ -3,6 +3,7 @@ import cv2
 import keras.utils
 import numpy as np
 import pandas as pd
+import src.config.config as cfg
 
 
 class DataGenerator(keras.utils.Sequence):
@@ -101,10 +102,10 @@ class DataGenerator(keras.utils.Sequence):
 
 
 if __name__ == "__main__":
-    data_set = DataGenerator(images_path='dataset',
-                             label_csv='dataset/Train.csv',
+    data_set = DataGenerator(images_path=cfg.dataset_path,
+                             label_csv=cfg.train_labels,
                              dim=128,
-                             client_id=2,
+                             client_id=0,
                              client_count=9)
 
     print("=================number of mini batches in dataset=================\n", len(data_set))

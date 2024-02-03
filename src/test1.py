@@ -3,26 +3,20 @@ import tensorflow as tf
 from src.utils.utils import keras_callbacks
 from tensorflow import keras
 from src.AI.dataset import DataGenerator
-from src.AI.model import classifier
 import numpy as np
+from src.AI.model import classifier
 import json
 
 
-def make_result(last_model):
-
+def make_result():
     train_dataset = DataGenerator(
         images_path=cfg.dataset_path,
         label_csv=cfg.train_labels,
         dim=cfg.image_size,
         pad_resize=cfg.pad_resize,
-        batch_size=cfg.batch_size,
-        client_id=cfg.cars.index(cfg.ID),
-        client_count=len(cfg.cars)
-    )
+        batch_size=cfg.batch_size)
 
-    model = keras.models.model_from_json(last_model['model'])
-    weights = [np.array(w) for w in last_model['weights']]
-    model.set_weights(weights)
+    model = classifier(cfg.image_size, cfg.class_num)
 
     if cfg.model_plot:
         tf.keras.utils.plot_model(model, to_file='model.png', show_shapes=True)
@@ -46,8 +40,11 @@ def make_result(last_model):
     data = {'model': model_json,
             'weights': json_weights,
             'metrics': {'loss': result[0], 'acc': result[1]}}
-    return data
+
+    with open('model3.json', 'w') as f:
+        json.dump(data, f)
 
 
 if __name__ == "__main__":
     make_result()
+

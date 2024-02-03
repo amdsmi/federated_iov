@@ -21,7 +21,7 @@ pubsub = PubSub(blockchain, transaction_pool)
 
 @app.route('/')
 def route_default():
-    return 'Welcome to the blockchain'
+    return 'welcome to fed-chain in iov'
 
 
 @app.route('/blockchain')

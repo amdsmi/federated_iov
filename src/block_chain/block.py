@@ -1,11 +1,12 @@
 import time
 from src.utils.crypto_hash import crypto_hash
+from src.AI.model import get_raw_model_weights
 
 GENESIS_DATA = {
     'timestamp': 1,
     'last_hash': 'genesis_last_hash',
     'hash': 'genesis_hash',
-    'data': []
+    'data': get_raw_model_weights()
 }
 
 
@@ -25,7 +26,7 @@ class Block:
             f'timestamp: {self.timestamp}, '
             f'last_hash: {self.last_hash}, '
             f'hash: {self.hash}, '
-            f'data: {self.data.metrics if self.data else self.data}, '
+            f'data: {self.data}, '
         )
 
     def to_json(self):
