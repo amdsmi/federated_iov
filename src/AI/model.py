@@ -1,10 +1,12 @@
-import numpy as np
-import json
+from src.AI.dataset import DataGenerator
+import src.config.config as cfg
 from tensorflow import keras
 from keras import layers
-import src.config.config as cfg
-from src.AI.dataset import DataGenerator
-
+import numpy as np
+import json
+import tensorflow as tf
+np.random.seed(cfg.seed)
+tf.random.set_seed(cfg.seed)
 
 def classifier(input_shape, num_classes):
     if isinstance(input_shape, int):
@@ -17,7 +19,8 @@ def classifier(input_shape, num_classes):
     x = layers.Conv2D(16, 3)(x)
     x = layers.Activation("relu")(x)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x)
-    x = layers.Dropout(0.25)(x)
+
+    x = layers.Dropout(0.25, seed=cfg.seed)(x)
 
     x = layers.Conv2D(32, 3)(x)
     x = layers.Activation("relu")(x)
@@ -26,14 +29,14 @@ def classifier(input_shape, num_classes):
     x = layers.Conv2D(32, 3)(x)
     x = layers.Activation("relu")(x)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x)
-    x = layers.Dropout(0.25)(x)
+    x = layers.Dropout(0.25, seed=cfg.seed)(x)
 
     x = layers.Flatten()(x)
 
     x = layers.Dense(64)(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(num_classes, activation="softmax")(x)
+    x = layers.Dropout(0.5, seed=cfg.seed)(x)
+    outputs = layers.Dense(num_classes, activation='softmax')(x)
 
     return keras.Model(inputs, outputs)
 
@@ -48,7 +51,7 @@ def get_raw_model_weights():
 
     return {'model': model_json,
             'weights': json_weights,
-            'metrics': {'loss': None, 'acc': None}}
+            'metrics': {'f1': None, 'acc': None, 'recall': None, 'precision': None, 'mse': None, 'rmse': None, 'mae': None}}
 
 
 def load_json():

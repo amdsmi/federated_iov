@@ -1,19 +1,18 @@
-import os
-import requests
-import concurrent.futures
-import json
-import flask
-import requests
-import time
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import src.config.config as cfg
-from src.AI.train import make_result
-from src.block_chain.blockchain import Blockchain
-from src.block_chain.block import Block
-from src.pubsub import PubSub
 from src.AI.fusion_models import fusion_best_models
-from threading import Thread
+from src.block_chain.blockchain import Blockchain
+from flask import Flask, jsonify, request
+from src.utils.utils import plot_metrics
+from src.block_chain.block import Block
+from src.AI.train import make_result
+import src.config.config as cfg
+from src.pubsub import PubSub
+from flask_cors import CORS
+import concurrent.futures
+import requests
+import random
+import flask
+import json
+import time
 
 
 class Miner:
@@ -44,6 +43,14 @@ class Server:
         @self.app.route('/replace/chain', methods=['POST'])
         def replace_chain():
             return self.__replace_chain()
+
+        @self.app.route('/plot_metric', methods=['GET'])
+        def plot_metric():
+            return self.__plot_metric()
+
+        @self.app.route('/confusion_matrix/<block>', methods=['GET'])
+        def confusion_matrix(block):
+            return self.__confusion_matrix(block)
 
         @self.app.route('/make/block', methods=['GET'])
         def make_block():
@@ -79,11 +86,23 @@ class Server:
 
         # ======================= home page ==========================
 
+    def __index(self):
+        return 'federated iov is up'
+
     def __last_block(self):
         return self.blockchain.chain[-1].data['metrics']
 
-    def __index(self):
-        return 'federated iov is up'
+    def __confusion_matrix(self, block):
+        block_num = int(block)
+        if block_num > len(self.blockchain.chain):
+            return 'you can not get the chain that has not been created yet'
+        model = self.blockchain.chain[block_num].data
+        make_result(model, inference=True)
+        return 'plot saved successfully'
+
+    def __plot_metric(self):
+        plot_metrics(self.blockchain.chain)
+        return 'plot saved successfully'
 
     def __make_block(self):
 
@@ -127,7 +146,7 @@ class Server:
         return jsonify(len(self.blockchain.chain))
 
     def __route_blockchain(self):
-        return [block.data['metrics'] for block in self.blockchain.chain]
+        return {str(idx): block.data['metrics'] for idx, block in enumerate(self.blockchain.chain)}
 
     def __route_blockchain_range(self):
         # http://localhost:5000/blockchain/range?start=2&end=5
@@ -136,20 +155,17 @@ class Server:
 
         return jsonify(self.blockchain.to_json()[::-1][start:end])
 
-
     def __station(self):
 
         car_addresses = self.generate_car_route(cfg.ID)
 
         while len(self.aggregated_models) < cfg.ROUND_PER_BLOCK:
-
             # model_to_aggregate = []  # list of json models
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
                 futures = [executor.submit(self.make_req, url) for url in car_addresses]
                 model_to_aggregate = [future.result() for future in concurrent.futures.as_completed(futures)]
             # for car_address in car_addresses:
             #     result = requests.get(car_address)  # json
-            #
             #     model_to_aggregate.append(result.json())
 
             self.aggregated_models.append(fusion_best_models(model_to_aggregate))  # fill the aggregated_models with
@@ -160,16 +176,15 @@ class Server:
         last_block = self.blockchain.chain[-1]
 
         mined_block = Block.mine_block(last_block, best_model)
+        time.sleep(random.random() * 10)
 
         if self._miner.miner:
 
-            print("=========================", self._miner.miner)
             headers = {'Content-Type': 'application/json'}
             result = requests.post(self._miner.miner, data=json.dumps(Block.to_json(mined_block)), headers=headers)
             self._miner.miner = None
             self._other_blocks = list()
             self.aggregated_models = list()
-            print("==========================", self._miner.miner)
 
         else:
 

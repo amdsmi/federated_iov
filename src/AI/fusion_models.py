@@ -1,16 +1,18 @@
-import tensorflow as tf
-from pymoo.core.problem import ElementwiseProblem
-import json
-from tensorflow import keras
-import src.config.config as cfg
-from src.AI.dataset import DataGenerator
-import numpy as np
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.mutation.pm import PM
 from pymoo.operators.sampling.rnd import FloatRandomSampling
-from pymoo.optimize import minimize
+from pymoo.core.problem import ElementwiseProblem
+from pymoo.operators.crossover.sbx import SBX
 from pymoo.termination import get_termination
+from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.operators.mutation.pm import PM
+from src.AI.dataset import DataGenerator
+from pymoo.optimize import minimize
+import src.config.config as cfg
+from tensorflow import keras
+import tensorflow as tf
+import numpy as np
+
+np.random.seed(cfg.seed)
+tf.random.set_seed(cfg.seed)
 
 
 def genetic_fusion_model(models_list):

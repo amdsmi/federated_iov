@@ -1,14 +1,16 @@
-import os
-import cv2
+import src.config.config as cfg
+import pandas as pd
 import keras.utils
 import numpy as np
-import pandas as pd
-import src.config.config as cfg
+import cv2
+import os
+import tensorflow as tf
+np.random.seed(cfg.seed)
+tf.random.set_seed(cfg.seed)
 
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self,
-
                  images_path,
                  label_csv,
                  dim,
@@ -36,7 +38,7 @@ class DataGenerator(keras.utils.Sequence):
     def list_ids(self):
         data = self.make_client_dataset(self.client_count,
                                         self.client_id,
-                                        self.label_csv) if self.client_id else pd.read_csv(self.label_csv)
+                                        self.label_csv) if self.client_count else pd.read_csv(self.label_csv)
 
         images = data['Path'].to_list()
         label = data['ClassId'].to_list()
@@ -106,8 +108,8 @@ if __name__ == "__main__":
                              label_csv=cfg.train_labels,
                              dim=128,
                              client_id=0,
-                             client_count=9)
+                             client_count=4)
 
     print("=================number of mini batches in dataset=================\n", len(data_set))
 
-    print("++++++++++++++++++++++++++first bathes data+++++++++++++++++++++++++\n", next(iter(data_set)))
+    # print("++++++++++++++++++++++++++first bathes data+++++++++++++++++++++++++\n", next(iter(data_set)))

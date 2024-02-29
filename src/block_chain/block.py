@@ -1,6 +1,6 @@
-import time
-from src.utils.crypto_hash import crypto_hash
 from src.AI.model import get_raw_model_weights
+from src.utils.crypto_hash import crypto_hash
+import time
 
 GENESIS_DATA = {
     'timestamp': 1,
